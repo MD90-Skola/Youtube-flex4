@@ -1,0 +1,41 @@
+<!-- Bottom sheet – inga headers, kompakta ikonknappar med text UNDER ikonen -->
+<div class="ytf-overlay" data-close>
+    <div class="ytf-sheet" role="dialog" aria-modal="true" aria-label="YT Tools">
+
+        <!-- Dislike Viewer (toggle) -->
+        <button class="ytf-iconbtn" data-action="dislikes" title="Dislike Viewer (toggle)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10 21c-.55 0-1-.45-1-1v-5H5.5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2H14c.55 0 1 .45 1 1v8.09l-3.91 6.77c-.18.31-.51.5-.87.5H10zm7-6V3h3v12h-3z"/></svg>
+            <span>Dislikes</span>
+        </button>
+
+        <!-- Stream mode (Full-Window) -->
+        <button class="ytf-iconbtn" data-action="stream" title="Stream mode (Full-Window)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 6h16v10H4V6zm-2 0c0-1.1.9-2 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4c-1.1 0-2-.9-2-2V6zm5 13h10v2H7z"/></svg>
+            <span>Stream</span>
+        </button>
+
+        <!-- Print screen .png (ikon ändrad till download-pil ned) -->
+        <button class="ytf-iconbtn" data-action="printpng" title="Print screen (.png)">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <!-- Tray -->
+                <path fill="currentColor" d="M5 20h14v-2H5z"/>
+                <!-- Arrow down -->
+                <path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1z"/>
+            </svg>
+            <span>.png</span>
+        </button>
+
+        <!-- Print screen to Clipboard -->
+        <button class="ytf-iconbtn" data-action="printcopy" title="Print screen → Clipboard">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5a2 2 0 0 0-2 2v1h18V5a2 2 0 0 0-2-2zM3 9v10a2 2 0 0 0 2 2h6v-2H5V9H3zm18 0H11a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2z"/></svg>
+            <span>Copy</span>
+        </button>
+
+        <!-- Social Blade -->
+        <button class="ytf-iconbtn" data-action="socialblade" title="Open Social Blade">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 17h4v4H3v-4zm7-7h4v11h-4V10zm7-6h4v17h-4V4z"/></svg>
+            <span>SB</span>
+        </button>
+
+    </div>
+</div>
