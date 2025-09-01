@@ -1,29 +1,18 @@
-// option-popup.js – körs i shadow-root. Skickar ett CustomEvent till sidan.
+// Modul för spelar-popupen (CSP-säker). Anropas från options.js: initPopup(shadowRoot)
+export function initPopup(shadowRoot) {
+    const overlay = shadowRoot.querySelector(".ytf-overlay");
+    const sheet   = shadowRoot.querySelector(".ytf-sheet");
+    if (!overlay || !sheet) return;
 
-(function () {
-    const root = document.currentScript.getRootNode();
-    const $ = (s) => root.querySelector(s);
-
-    function close() {
-        const ov = $(".ytf-overlay");
-        if (!ov) return;
-        ov.style.animation = "ytf-fade .12s reverse ease-in";
-        setTimeout(() => ov.remove(), 120);
-    }
-
-    root.addEventListener("click", (e) => {
-        if (e.target.matches("[data-close]")) close();
+    overlay.addEventListener("click", (e) => {
+        const path = e.composedPath ? e.composedPath() : [];
+        if (!path.includes(sheet)) shadowRoot.host.remove();
     });
 
-    function fire(action) {
-        // Bubblar till window i contentscript-kontexten
-        window.dispatchEvent(new CustomEvent("ytf:action", { detail: { action } }));
-    }
-
-    root.querySelectorAll(".ytf-tile").forEach(btn => {
+    shadowRoot.querySelectorAll(".ytf-iconbtn").forEach(btn => {
         btn.addEventListener("click", () => {
-            fire(btn.getAttribute("data-action"));
-            // close(); // lämna öppen om du vill
+            const action = btn.getAttribute("data-action");
+            window.dispatchEvent(new CustomEvent("ytf:action", { detail: { action } }));
         });
     });
-})();
+}

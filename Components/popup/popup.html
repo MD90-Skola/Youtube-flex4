@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>YT Flex · Toggles</title>
+    <link rel="stylesheet" href="popup.css" />
+</head>
+<body class="ytf-standalone">
+<div class="ytf-opt-overlay">
+    <div class="ytf-opt-sheet" role="dialog" aria-modal="true" aria-label="YT Flex options">
+        <div class="ytf-title">YT Flex · Toggles</div>
+
+        <div class="ytf-row">
+            <div>
+                <div>Add YTP Options Button</div>
+                <div class="ytf-note">Knapp med inställningar i spelaren.</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" data-setting="addOptionsButton">
+                <span class="track"></span><span class="thumb"></span>
+            </label>
+        </div>
+
+        <div class="ytf-row">
+            <div>
+                <div>Add YTP Full-Window Button</div>
+                <div class="ytf-note">Direktknapp för “Stream/Full-Window”.</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" data-setting="addFullWindowButton">
+                <span class="track"></span><span class="thumb"></span>
+            </label>
+        </div>
+
+        <div class="ytf-row">
+            <div>
+                <div>Dislike Viewer</div>
+                <div class="ytf-note">Visa 👎-data vid spelaren.</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" data-setting="enableDislikes">
+                <span class="track"></span><span class="thumb"></span>
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- MV3: inga inline scripts. Ladda modulfilen direkt. -->
+<script type="module" src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+/* === Centrering i YouTubes kontrollrad ================================ */
+/* Justera dessa variabler – ingen JS ändring behövs.                     */
+:root{
+    /* Finjustera läget relativt mitten av kontrollraden */
+    --ymp-center-nudge-x: 0px;    /* + = höger,  - = vänster  */
+    --ymp-center-nudge-y: -10px;  /* + = ner,    - = upp      */
+
+    /* Avstånd mellan knapparna */
+    --ymp-gap: 10px;
+
+    /* Knapputseende */
+    --ymp-btn-size: 36px;
+    --ymp-btn-radius: 10px;
+    --ymp-btn-bg: rgba(0,0,0,.50);
+    --ymp-btn-bg-hover: rgba(0,0,0,.65);
+    --ymp-btn-bd: rgba(255,255,255,.12);
+    --ymp-btn-bd-hover: rgba(255,255,255,.20);
+    --ymp-icon-size: 22px;
+}
+
+/* Vår slot ligger absolut inne i kontrollraden */
+.ytp-chrome-controls { position: relative !important; }
+
+#ytf-center-slot{
+    position: absolute;
+    left: 50%; top: 50%;
+    transform:
+            translate(-50%, -50%)
+            translate(var(--ymp-center-nudge-x), var(--ymp-center-nudge-y));
+    display: flex;
+    gap: var(--ymp-gap);
+    pointer-events: none;     /* stör inte andra kontroller */
+    z-index: 2147483645;
+}
+
+/* Endast knapparna fångar klick */
+#ytf-center-slot .ytf-btn{
+    pointer-events: auto;
+    width: var(--ymp-btn-size);
+    height: var(--ymp-btn-size);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ymp-btn-radius);
+    background: var(--ymp-btn-bg);
+    border: 1px solid var(--ymp-btn-bd);
+    color: #fff;
+    cursor: pointer;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+#ytf-center-slot .ytf-btn:hover{
+    transform: translateY(-1px);
+    background: var(--ymp-btn-bg-hover);
+    border-color: var(--ymp-btn-bd-hover);
+}
+#ytf-center-slot .ytf-btn svg{
+    width: var(--ymp-icon-size);
+    height: var(--ymp-icon-size);
+    display: block;
+    pointer-events: none;
+    transform: translateY(-2px); /* liten optisk justering */
+}

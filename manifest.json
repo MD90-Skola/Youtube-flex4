@@ -1,15 +1,22 @@
 {
   "manifest_version": 3,
   "name": "Youtube Flex 4",
-  "version": "0.3.2",
+  "version": "0.5.1",
   "description": "Modern toolkit för YouTube-spelaren.",
-  "permissions": [],
+  "incognito": "spanning",
+
+  "permissions": ["storage"],
   "host_permissions": [
     "https://www.youtube.com/*",
     "https://m.youtube.com/*",
     "https://returnyoutubedislikeapi.com/*"
   ],
-  "incognito": "spanning",
+
+  "action": {
+    "default_title": "YT Flex",
+    "default_popup": "Components/popup/popup.html"
+  },
+
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
@@ -17,25 +24,31 @@
       "run_at": "document_idle"
     }
   ],
+
   "web_accessible_resources": [
     {
+      "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
       "resources": [
+        "Components/Buttons/YTP-Button/add-buttons-to-ymp/ymp-position.css",
+
         "Components/Buttons/YTP-Button/design/option-popup.html",
         "Components/Buttons/YTP-Button/design/option-popup.css",
+        "Components/Buttons/YTP-Button/design/option-popup.js",
 
         "Components/Dislikes/dislike.js",
         "Components/Dislikes/dislike.css",
 
-        "Components/zoom/zoom.js",
         "Components/Full-Window/index.js",
-        "Components/Full-Window/normal-mode/fullwindow.js",
         "Components/Full-Window/bio-mode/fullwindow.js",
         "Components/Full-Window/fullscreen-mode/fullwindow.js",
+        "Components/Full-Window/normal-mode/fullwindow.js",
 
         "Components/Print-screen/index.js",
-        "Components/social-blade/index.js"
-      ],
-      "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"]
+        "Components/Print-screen/print-clipboard.js",
+
+        "Components/social-blade/index.js",
+        "Components/zoom/zoom.js"
+      ]
     }
   ]
 }
