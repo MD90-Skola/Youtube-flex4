@@ -204,6 +204,20 @@ window.addEventListener("ytf:action", async (e) => {
             const m = await useModule("Components/Print-screen/tumbnail/downloadThumbnail.js");
             m.downloadThumbnail?.();
 
+
+        } else if (action === "videodl") {
+            const url = prompt("Enter a direct media URL you have permission to download:");
+            if (url) {
+                const m = await useModule("Components/video/video-download/index.js");
+                m.downloadMediaFromUrl?.(url);
+            }
+        } else if (action === "convertmp3") {
+            const m = await useModule("Components/video/converter-mp3/index.js");
+            m.pickAndConvertToMp3?.();
+
+
+
+
         } else if (action === "printpng") {
             const m = await useModule("Components/Print-screen/index.js");
             m.captureFrame?.();

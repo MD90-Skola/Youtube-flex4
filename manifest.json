@@ -1,9 +1,30 @@
 {
   "manifest_version": 3,
-  "name": "Youtube Flex 4",
+  "name": "Youtube Flex",
   "version": "0.5.1",
   "description": "Modern toolkit för YouTube-spelaren.",
   "incognito": "spanning",
+
+
+
+  "icons": {
+    "16": "assets/icon.png",
+    "32": "assets/icon.png",
+    "48": "assets/icon.png",
+    "128": "assets/icon.png"
+  },
+  "action": {
+    "default_title": "YT Flex",
+    "default_popup": "Components/popup/popup.html",
+    "default_icon": {
+      "16": "assets/icon.png",
+      "32": "assets/icon.png",
+      "48": "assets/icon.png",
+      "128": "assets/icon.png"
+    }
+  },
+
+
 
   "permissions": ["storage"],
   "host_permissions": [
@@ -12,10 +33,6 @@
     "https://returnyoutubedislikeapi.com/*"
   ],
 
-  "action": {
-    "default_title": "YT Flex",
-    "default_popup": "Components/popup/popup.html"
-  },
 
   "content_scripts": [
     {
@@ -48,7 +65,22 @@
         "Components/Print-screen/tumbnail/downloadThumbnail.js",
 
         "Components/social-blade/index.js",
-        "Components/zoom/zoom.js"
+        "Components/zoom/zoom.js",
+
+
+
+        "libs/ffmpeg/ffmpeg.min.js",
+        "libs/ffmpeg/ffmpeg-core.js",
+        "libs/ffmpeg/ffmpeg-core.wasm",
+        "Components/video/video-download/index.js",
+        "Components/video/converter-mp3/index.js"
+
+
+
+
+
+
+
       ]
     }
   ]
