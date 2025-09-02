@@ -199,6 +199,11 @@ window.addEventListener("ytf:action", async (e) => {
             toggleDislikes(nv);
         } else if (action === "stream") {
             await toggleFullWindow();
+
+        } else if (action === "thumbdl") {
+            const m = await useModule("Components/Print-screen/tumbnail/downloadThumbnail.js");
+            m.downloadThumbnail?.();
+
         } else if (action === "printpng") {
             const m = await useModule("Components/Print-screen/index.js");
             m.captureFrame?.();
@@ -213,6 +218,11 @@ window.addEventListener("ytf:action", async (e) => {
         console.error("[YT-Flex] action error:", err);
     }
 });
+
+
+
+
+
 
 // (valfritt) starta zoom, tyst om saknas
 try {

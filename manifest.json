@@ -45,10 +45,12 @@
 
         "Components/Print-screen/index.js",
         "Components/Print-screen/print-clipboard.js",
+        "Components/Print-screen/tumbnail/downloadThumbnail.js",
 
         "Components/social-blade/index.js",
         "Components/zoom/zoom.js"
       ]
     }
   ]
+
 }
