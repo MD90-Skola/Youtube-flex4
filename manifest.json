@@ -4,9 +4,6 @@
   "version": "0.5.1",
   "description": "Modern toolkit för YouTube-spelaren.",
   "incognito": "spanning",
-
-
-
   "icons": {
     "16": "assets/icon.png",
     "32": "assets/icon.png",
@@ -23,29 +20,42 @@
       "128": "assets/icon.png"
     }
   },
-
-
-
   "permissions": ["storage"],
   "host_permissions": [
     "https://www.youtube.com/*",
     "https://m.youtube.com/*",
     "https://returnyoutubedislikeapi.com/*"
   ],
-
-
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
-      "js": ["Components/Buttons/YTP-Button/options.js"],
-      "run_at": "document_idle"
+      "matches": [
+        "https://www.youtube.com/watch*",
+        "https://www.youtube.com/shorts*",
+        "https://m.youtube.com/watch*",
+        "https://m.youtube.com/shorts*"
+      ],
+      "exclude_matches": [
+        "https://www.youtube.com/embed/*",
+        "https://www.youtube.com/live_chat*",
+        "https://www.youtube.com/iframe_api*",
+        "https://m.youtube.com/embed/*",
+        "https://m.youtube.com/live_chat*",
+        "https://m.youtube.com/iframe_api*"
+      ],
+      "js": [
+        "Components/Buttons/YTP-Button/options.js",
+        "Components/Full-Window/content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ],
-
   "web_accessible_resources": [
     {
       "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
       "resources": [
+        "Components/Full-Window/content.css",
+
         "Components/Buttons/YTP-Button/add-buttons-to-ymp/ymp-position.css",
 
         "Components/Buttons/YTP-Button/design/option-popup.html",
@@ -55,11 +65,6 @@
         "Components/Dislikes/dislike.js",
         "Components/Dislikes/dislike.css",
 
-        "Components/Full-Window/index.js",
-        "Components/Full-Window/bio-mode/fullwindow.js",
-        "Components/Full-Window/fullscreen-mode/fullwindow.js",
-        "Components/Full-Window/normal-mode/fullwindow.js",
-
         "Components/Print-screen/index.js",
         "Components/Print-screen/print-clipboard.js",
         "Components/Print-screen/tumbnail/downloadThumbnail.js",
@@ -67,22 +72,12 @@
         "Components/social-blade/index.js",
         "Components/zoom/zoom.js",
 
-
-
         "libs/ffmpeg/ffmpeg.min.js",
         "libs/ffmpeg/ffmpeg-core.js",
         "libs/ffmpeg/ffmpeg-core.wasm",
         "Components/video/video-download/index.js",
         "Components/video/converter-mp3/index.js"
-
-
-
-
-
-
-
       ]
     }
   ]
-
 }

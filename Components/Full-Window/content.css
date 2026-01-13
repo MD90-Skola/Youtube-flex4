@@ -1,0 +1,130 @@
+/* =========================================================
+   YT FLEX – LAYOUT SYSTEM
+   En CSS-fil, tre lägen
+   ========================================================= */
+
+
+/* =========================================================
+   0) GLOBAL BAS (gäller alla lägen)
+   ========================================================= */
+html.yt-flex,
+body.yt-flex {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #000 !important;
+}
+
+/* Gemensam säkerhet */
+ytd-watch-flexy video {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: #000 !important;
+}
+
+
+/* =========================================================
+   1) NORMAL MODE
+   - Vanligt YouTube-läge
+   - Ingen fullscreen
+   ========================================================= */
+ytd-watch-flexy.yt-mode-normal {
+  position: relative !important;
+}
+
+ytd-watch-flexy.yt-mode-normal video {
+  max-height: 90vh !important;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+
+/* =========================================================
+   2) THEATER / WINDOWED FULLSCREEN
+   - Maximal storlek
+   - Aldrig crop
+   - Matematiskt korrekt centrerad
+   ========================================================= */
+html.yt-flex.yt-theater,
+body.yt-flex.yt-theater {
+  overflow: hidden !important;
+}
+
+ytd-watch-flexy.yt-mode-theater {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #000 !important;
+  z-index: 2147483646 !important;
+}
+
+/* Ramen som videon lever i */
+ytd-watch-flexy.yt-mode-theater #player-theater-container {
+  position: absolute !important;
+  inset: 0 !important;
+  background: #000 !important;
+  overflow: hidden !important;
+}
+
+/* Alla wrappers fyller ramen */
+ytd-watch-flexy.yt-mode-theater #player,
+ytd-watch-flexy.yt-mode-theater #player-container,
+ytd-watch-flexy.yt-mode-theater ytd-player,
+ytd-watch-flexy.yt-mode-theater #movie_player,
+ytd-watch-flexy.yt-mode-theater .html5-video-player,
+ytd-watch-flexy.yt-mode-theater .html5-video-container {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 🔑 MATEMATISK VIDEO */
+ytd-watch-flexy.yt-mode-theater video {
+  position: absolute !important;
+  inset: 0 !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain !important; /* aldrig crop */
+  object-position: center center !important;
+
+  background: #000 !important;
+}
+
+/* Göm allt runt */
+ytd-watch-flexy.yt-mode-theater #masthead-container,
+ytd-watch-flexy.yt-mode-theater #secondary,
+ytd-watch-flexy.yt-mode-theater #below,
+ytd-watch-flexy.yt-mode-theater #comments,
+ytd-watch-flexy.yt-mode-theater #chat {
+  display: none !important;
+}
+
+
+/* =========================================================
+   3) SHORTS MODE
+   - Vertikal video
+   - Full höjd
+   ========================================================= */
+html.yt-flex.yt-shorts,
+body.yt-flex.yt-shorts {
+  overflow: hidden !important;
+}
+
+ytd-watch-flexy.yt-mode-shorts {
+  position: fixed !important;
+  inset: 0 !important;
+  background: #000 !important;
+}
+
+ytd-watch-flexy.yt-mode-shorts video {
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: contain !important; /* behåll hela shortsen */
+  object-position: center center !important;
+}
