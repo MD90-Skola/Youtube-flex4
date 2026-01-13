@@ -1,0 +1,5 @@
+ytd-menu-renderer #top-level-buttons-computed {
+  display: flex !important;
+  align-items: center;
+  gap: 8px !important;
+}

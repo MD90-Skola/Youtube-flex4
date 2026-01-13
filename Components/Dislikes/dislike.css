@@ -1,42 +1,11 @@
-/*
-Dislike Viewer (badge) — placeras TILL VÄNSTER om like/dislike.
+/* Components/Dislikes/dislike.css */
+/* Visar siffror direkt i YouTube-knapparna (ingen bubble) */
 
-Justera placering/finlir med variablerna nedan:
-- --dislike-chip-top:   finjustering upp/ner (negativt värde = uppåt)
-- --dislike-chip-left:  finjustering vänster/höger (positivt = åt höger)
-- --dislike-chip-gap:   avstånd till nästa element (till höger om badgen)
-*/
-
-:root {
-    --dislike-chip-top: 0px;
-    --dislike-chip-left: 0px;
-    --dislike-chip-gap: 8px;
-}
-
-/* Själva badgen */
-.ytf-dislikes-chip {
-    position: relative;
-    top: var(--dislike-chip-top);
-    left: var(--dislike-chip-left);
-
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-
-    padding: 4px 8px;
-    margin-right: var(--dislike-chip-gap);
-
-    border-radius: 999px;
-    background: rgba(0,0,0,.65);
-    color: #fff;
-    border: 1px solid #333;
-
-    font: 600 12px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    backdrop-filter: blur(4px);
-}
-
-/* Texten inom parentesen */
-.ytf-dislikes-chip small {
-    opacity: .8;
-    font-weight: 500;
+.ytf-count {
+  margin-left: 6px;
+  font: inherit;
+  color: inherit;
+  opacity: 0.95;
+  line-height: 1;
+  white-space: nowrap;
 }

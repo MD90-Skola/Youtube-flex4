@@ -1,279 +1,267 @@
-// YT Flex — center-slot med fungerande popup-actions + FW-genväg
+// Components/Buttons/YTP-Button/options.js
+// YT Flex — Options button next to Like + opens option-popup (shadow, CSP-safe)
 
-const DEFAULTS = {
-  addOptionsButton: true,
-  addFullWindowButton: true,
-  enableDislikes: false,
-};
+(() => {
+  "use strict";
 
-const raf = () => new Promise((r) => requestAnimationFrame(r));
-async function waitFor(sel, timeout = 8000) {
-  const t0 = performance.now();
-  while (performance.now() - t0 < timeout) {
-    const el = document.querySelector(sel);
-    if (el) return el;
-    await raf();
+  const DEFAULTS = {
+    addonEnabled: true,
+    addOptionsButton: true,
+    advStreamMode: true,
+    enableDislikes: false,
+  };
+
+  const IDS = {
+    TOP_BTN: "ytf-top-opt-btn",
+    WRAP: "ytf-top-opt-wrap",
+    HOST: "ytf-options-host",
+  };
+
+  async function getState() {
+    try {
+      const stored = await chrome.storage.local.get(Object.keys(DEFAULTS));
+      return Object.assign({}, DEFAULTS, stored);
+    } catch {
+      return { ...DEFAULTS };
+    }
   }
-  return null;
-}
-function getVideoId() {
-  const u = new URL(location.href);
-  return (
-    u.searchParams.get("v") ||
-    document.querySelector("ytd-watch-flexy")?.getAttribute("video-id") ||
-    ""
-  );
-}
-async function getState() {
-  try {
-    return Object.assign({}, DEFAULTS, await chrome.storage.local.get(Object.keys(DEFAULTS)));
-  } catch {
-    return { ...DEFAULTS };
-  }
-}
-function ensurePosCss() {
-  if (document.getElementById("ytf-ymp-pos-css")) return;
-  const link = document.createElement("link");
-  link.id = "ytf-ymp-pos-css";
-  link.rel = "stylesheet";
-  link.href = chrome.runtime.getURL(
-    "Components/Buttons/YTP-Button/add-buttons-to-ymp/ymp-position.css"
-  );
-  document.documentElement.appendChild(link);
-}
-function svg(d, sz = 22) {
-  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  s.setAttribute("viewBox", "0 0 24 24");
-  s.setAttribute("width", String(sz));
-  s.setAttribute("height", String(sz));
-  s.innerHTML = `<path fill="currentColor" d="${d}"/>`;
-  return s;
-}
 
-// ---------- Full-Window trigger (NY: ingen import) ----------
-let fwBusy = false;
-
-function fireWinFs(action = "toggle") {
-  // skickas till Components/Full-Window/content.js (som lyssnar på detta event)
-  window.dispatchEvent(new CustomEvent("YT_FLEX_WINFS", { detail: { action } }));
-}
-
-async function toggleFullWindow() {
-  if (fwBusy) return;
-  fwBusy = true;
-  try {
-    fireWinFs("toggle");
-  } catch (e) {
-    console.warn("[YT-Flex] Full-Window event error:", e);
-  } finally {
-    fwBusy = false;
-    scheduleMount(50);
-  }
-}
-
-// ---------- Buttons ----------
-function makeOptionsBtn() {
-  const b = document.createElement("button");
-  b.className = "ytf-btn";
-  b.type = "button";
-  b.title = "YT Flex — Options (Alt-klick = Full-Window)";
-  b.appendChild(
-    svg(
-      "M3 6c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2.18l2.2-1.65c.66-.5 1.8-.03 1.8.82V16.6c0 .85-1.14 1.32-1.8.83L17 15.77V18c1.1 0 2-.9 2-2V6zm-6.52 3.06h1.04l.17.48c.2.06.39.15.57.26l.47-.19.74.74-.19.47c.12.18.2.37.26.57l.48.17v1.04l-.48.17c-.06.2-.15.39-.26.57l.19.47-.74.74-.47-.19c-.18.12-.37.2-.57.26l-.17.48H8.48l-.17-.48c-.2-.06-.39-.15-.57-.26l-.47.19-.74-.74.19-.47c-.12-.18-.2-.37-.26-.57l-.48-.17v-1.04l.48-.17c.06-.2.15-.39.26-.57l-.19-.47.74-.74.47.19c.18-.12.37-.2.57-.26l.17-.48zm.52 1.94a1 1 0 110 2 1 1 0 010-2z"
-    )
-  );
-
-  // Primärt: öppna popup. Genväg: Alt-klick eller dubbelklick => FW toggle.
-  b.addEventListener(
-    "click",
-    (ev) => {
-      if (ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey) {
-        toggleFullWindow();
-        return;
-      }
-      openPlayerPopup();
-    },
-    { passive: true }
-  );
-  b.addEventListener("dblclick", () => toggleFullWindow(), { passive: true });
-  return b;
-}
-
-function makeFullWindowBtn() {
-  const b = document.createElement("button");
-  b.className = "ytf-btn";
-  b.type = "button";
-  b.title = "YT Flex — Full-Window";
-  b.appendChild(svg("M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm3 14h10v2H7z"));
-  b.addEventListener("click", () => toggleFullWindow(), { passive: true });
-  return b;
-}
-
-// ---------- Mount center slot ----------
-let lastKey = "";
-let currentControls = null;
-let moControls = null;
-let mountTimer = null;
-
-function scheduleMount(delay = 80) {
-  clearTimeout(mountTimer);
-  mountTimer = setTimeout(() => mountCenterSlot(), delay);
-}
-
-async function mountCenterSlot() {
-  ensurePosCss();
-
-  let controls = document.querySelector(".ytp-chrome-controls");
-  if (!controls) controls = await waitFor(".ytp-chrome-controls", 8000);
-  if (!controls) return;
-
-  const state = await getState();
-  const key = JSON.stringify({
-    v: getVideoId(),
-    A: !!state.addOptionsButton,
-    F: !!state.addFullWindowButton,
-  });
-
-  const hasSlot = !!controls.querySelector("#ytf-center-slot");
-  if (key === lastKey && hasSlot) {
-    return toggleDislikes(state.enableDislikes);
-  }
-  lastKey = key;
-
-  controls.querySelectorAll("#ytf-center-slot").forEach((n) => n.remove());
-
-  const slot = document.createElement("div");
-  slot.id = "ytf-center-slot";
-  if (state.addOptionsButton) slot.appendChild(makeOptionsBtn());
-  if (state.addFullWindowButton) slot.appendChild(makeFullWindowBtn());
-  if (slot.childElementCount) controls.appendChild(slot);
-
-  toggleDislikes(state.enableDislikes);
-
-  if (currentControls !== controls) {
-    if (moControls) try { moControls.disconnect(); } catch {}
-    currentControls = controls;
-    moControls = new MutationObserver(() => {
-      if (!currentControls.querySelector("#ytf-center-slot")) scheduleMount(0);
-    });
-    moControls.observe(currentControls, { childList: true });
-  }
-}
-
-window.addEventListener("yt-navigate-finish", () => scheduleMount(0), true);
-document.addEventListener("fullscreenchange", () => scheduleMount(0), true);
-chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== "local") return;
-  if ("addOptionsButton" in changes || "addFullWindowButton" in changes || "enableDislikes" in changes) {
-    scheduleMount(0);
-  }
-});
-scheduleMount(0);
-
-// ---------- Dislikes ----------
-async function toggleDislikes(on) {
-  try {
-    const d = await import(chrome.runtime.getURL("Components/Dislikes/dislike.js"));
-    if (on) d.enable?.();
-    else d.disable?.();
-  } catch {}
-}
-
-// ---------- Player popup (design/*) ----------
-async function openPlayerPopup() {
-  let host = document.getElementById("ytf-option-host");
-  if (!host) {
-    host = document.createElement("div");
-    host.id = "ytf-option-host";
-    document.documentElement.appendChild(host);
-    host.attachShadow({ mode: "open" });
-  }
-  const shadow = host.shadowRoot;
-  shadow.innerHTML = "";
-
-  const base = "Components/Buttons/YTP-Button/design/";
-  const cssURL = chrome.runtime.getURL(base + "option-popup.css");
-  const htmlURL = chrome.runtime.getURL(base + "option-popup.html");
-  const jsURL = chrome.runtime.getURL(base + "option-popup.js");
-
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = cssURL;
-  shadow.appendChild(link);
-
-  let html = "";
-  try { html = await fetch(htmlURL).then((r) => r.text()); } catch {}
-  const wrap = document.createElement("div");
-  wrap.innerHTML = html;
-  shadow.appendChild(wrap);
-
-  try {
-    const m = await import(jsURL);
-    m.initPopup?.(shadow);
-  } catch {
-    const ov = shadow.querySelector(".ytf-overlay");
-    const sheet = shadow.querySelector(".ytf-sheet");
-    ov?.addEventListener(
-      "click",
-      (e) => {
-        const p = e.composedPath ? e.composedPath() : [];
-        if (!p.includes(sheet)) shadow.host.remove();
-      },
-      { passive: true }
+  // ---------- YouTube top menu helpers ----------
+  function topMenuEl() {
+    return (
+      document.querySelector("#top-level-buttons-computed") ||
+      document.querySelector("ytd-masthead #top-level-buttons") ||
+      document.querySelector("ytd-masthead #top-level-buttons-container #top-level-buttons")
     );
   }
-}
 
-// ---------- Popup action router ----------
-const modCache = {};
-async function useModule(path) {
-  if (!modCache[path]) modCache[path] = import(chrome.runtime.getURL(path));
-  return modCache[path];
-}
+  async function waitForTopMenu(timeout = 12000) {
+    const now = topMenuEl();
+    if (now) return now;
 
-window.addEventListener("ytf:action", async (e) => {
-  const action = e.detail && e.detail.action;
-  try {
-    if (action === "dislikes") {
-      const st = await getState();
-      const nv = !st.enableDislikes;
-      await chrome.storage.local.set({ enableDislikes: nv });
-      toggleDislikes(nv);
-    } else if (action === "stream") {
-      await toggleFullWindow();
+    return await new Promise((resolve) => {
+      let done = false;
 
-    } else if (action === "thumbdl") {
-      const m = await useModule("Components/Print-screen/tumbnail/downloadThumbnail.js");
-      m.downloadThumbnail?.();
+      const finish = (val) => {
+        if (done) return;
+        done = true;
+        try { obs.disconnect(); } catch {}
+        clearTimeout(t);
+        resolve(val);
+      };
 
-    } else if (action === "videodl") {
-      const url = prompt("Enter a direct media URL you have permission to download:");
-      if (url) {
-        const m = await useModule("Components/video/video-download/index.js");
-        m.downloadMediaFromUrl?.(url);
-      }
-    } else if (action === "convertmp3") {
-      const m = await useModule("Components/video/converter-mp3/index.js");
-      m.pickAndConvertToMp3?.();
+      const t = setTimeout(() => finish(null), timeout);
 
-    } else if (action === "printpng") {
-      const m = await useModule("Components/Print-screen/index.js");
-      m.captureFrame?.();
-    } else if (action === "printcopy" || action === "printscreenn-clipboard") {
-      const m = await useModule("Components/Print-screen/print-clipboard.js");
-      m.copyToClipboard?.();
-    } else if (action === "socialblade") {
-      const m = await useModule("Components/social-blade/index.js");
-      m.openSocialBlade?.();
-    }
-  } catch (err) {
-    console.error("[YT-Flex] action error:", err);
+      const obs = new MutationObserver(() => {
+        const el = topMenuEl();
+        if (el) finish(el);
+      });
+
+      obs.observe(document.documentElement, { childList: true, subtree: true });
+    });
   }
-});
 
-// (valfritt) starta zoom, tyst om saknas
-try {
-  import(chrome.runtime.getURL("Components/zoom/zoom.js"))
-    .then((m) => m.initAlwaysOn?.())
-    .catch(() => {});
-} catch {}
+  function findDirectChild(menu, el) {
+    if (!menu || !el) return null;
+    let cur = el;
+    while (cur && cur.parentElement && cur.parentElement !== menu) cur = cur.parentElement;
+    return (cur && cur.parentElement === menu) ? cur : null;
+  }
+
+  function findLikeChild(menu) {
+    if (!menu) return null;
+
+    // vanlig variant
+    const direct = [...menu.children].find(
+      el => (el.tagName || "").toLowerCase() === "segmented-like-dislike-button-view-model"
+    );
+    if (direct) return direct;
+
+    // fallback: hitta Like/Gilla-knapp och mappa upp till direct child
+    const btn =
+      menu.querySelector('button[aria-label*="Gilla"]') ||
+      menu.querySelector('button[aria-label*="Like"]') ||
+      menu.querySelector('button[title*="Gilla"]') ||
+      menu.querySelector('button[title*="Like"]');
+
+    return findDirectChild(menu, btn);
+  }
+
+  function findShareChild(menu) {
+    if (!menu) return null;
+    for (const child of [...menu.children]) {
+      const btn = [...child.querySelectorAll("button[aria-label]")].find(b => {
+        const a = (b.getAttribute("aria-label") || "").trim().toLowerCase();
+        return a === "dela" || a === "share";
+      });
+      if (btn) return child;
+    }
+    return null;
+  }
+
+  function insertAfter(parent, node, refNode) {
+    parent.insertBefore(node, refNode?.nextSibling || null);
+  }
+
+  // ---------- Cleanup ----------
+  function removeTopButton() {
+    document.getElementById(IDS.WRAP)?.remove();
+    document.querySelectorAll(`#${IDS.TOP_BTN}`).forEach(n => n.remove());
+  }
+
+  function removeHost() {
+    document.getElementById(IDS.HOST)?.remove();
+  }
+
+  // ---------- Popup open (loads option-popup.*) ----------
+  async function openOptionsPopup() {
+    const state = await getState();
+    if (!state.addonEnabled) return;
+
+    let host = document.getElementById(IDS.HOST);
+    if (!host) {
+      host = document.createElement("div");
+      host.id = IDS.HOST;
+      document.documentElement.appendChild(host);
+      host.attachShadow({ mode: "open" });
+    }
+
+    const shadow = host.shadowRoot;
+    shadow.innerHTML = "";
+
+    const base = "Components/Buttons/YTP-Button/add-buttons-to-ymp/";
+    const htmlURL = chrome.runtime.getURL(base + "option-popup.html");
+    const cssURL  = chrome.runtime.getURL(base + "option-popup.css");
+    const jsURL   = chrome.runtime.getURL(base + "option-popup.js");
+
+    // CSS
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = cssURL;
+    shadow.appendChild(link);
+
+    // HTML
+    const html = await fetch(htmlURL).then(r => r.text());
+    const wrap = document.createElement("div");
+    wrap.innerHTML = html;
+    shadow.appendChild(wrap);
+
+    // JS init
+    const m = await import(jsURL);
+    m.initPopup?.(shadow);
+  }
+
+  // ---------- Build the top Options button (no cloning) ----------
+  function buildTopWrap() {
+    const wrap = document.createElement("yt-button-view-model");
+    wrap.id = IDS.WRAP;
+    wrap.className = "ytd-menu-renderer";
+
+    const btn = document.createElement("button");
+    btn.id = IDS.TOP_BTN;
+    btn.type = "button";
+    btn.title = ""; // ta bort tooltip
+    btn.setAttribute("aria-label", "Options");
+    btn.setAttribute("aria-disabled", "false");
+    btn.className = "yt-spec-button-shape-next yt-spec-button-shape-next--text yt-spec-button-shape-next--icon-leading";
+
+    const icon = document.createElement("span");
+    icon.className = "yt-spec-button-shape-next__icon";
+    icon.innerHTML = `
+      <span class="ytIconWrapperHost" style="width:24px;height:24px;">
+        <span class="yt-icon-shape ytSpecIconShapeHost">
+          <div style="width:100%;height:100%;display:block;fill:currentcolor;">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"
+                 focusable="false" aria-hidden="true"
+                 style="pointer-events:none;display:inherit;width:100%;height:100%;">
+              <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.27 7.27 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 7.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.51.4 1.05.71 1.63.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/>
+            </svg>
+          </div>
+        </span>
+      </span>
+    `;
+
+    const text = document.createElement("span");
+    text.className = "yt-spec-button-shape-next__button-text-content";
+    text.textContent = "Options";
+
+    btn.appendChild(icon);
+    btn.appendChild(text);
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      openOptionsPopup();
+    }, true);
+
+    wrap.appendChild(btn);
+    return wrap;
+  }
+
+  async function mountTopButton() {
+    const state = await getState();
+
+    if (!state.addonEnabled || !state.addOptionsButton) {
+      removeTopButton();
+      return;
+    }
+
+    const menu = await waitForTopMenu(12000);
+    if (!menu) return;
+
+    let wrap = document.getElementById(IDS.WRAP);
+    if (!wrap) {
+      wrap = buildTopWrap();
+      menu.appendChild(wrap);
+    }
+
+    // Place after Like if possible
+    const likeNow = findLikeChild(menu);
+    const shareNow = findShareChild(menu);
+
+    if (likeNow) insertAfter(menu, wrap, likeNow);
+    else if (shareNow) menu.insertBefore(wrap, shareNow);
+  }
+
+  // ---------- F12 trigger ----------
+  window.addEventListener("message", (e) => {
+    if (e.source !== window) return;
+    if (e.data?.type === "YTF_OPEN_OPTIONS") openOptionsPopup();
+  });
+
+  // ---------- Mount loop ----------
+  let timer = null;
+  function schedule(delay = 120) {
+    clearTimeout(timer);
+    timer = setTimeout(() => mount(), delay);
+  }
+
+  async function mount() {
+    try {
+      const state = await getState();
+      if (!state.addonEnabled) {
+        removeTopButton();
+        removeHost();
+        return;
+      }
+      await mountTopButton();
+    } catch (err) {
+      console.error("[YT-Flex] mount crash:", err);
+    }
+  }
+
+  window.addEventListener("yt-navigate-finish", () => schedule(0), true);
+  window.addEventListener("load", () => schedule(0), true);
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== "local") return;
+    if (Object.keys(changes).some(k => k in DEFAULTS)) schedule(0);
+  });
+
+  const obs = new MutationObserver(() => {
+    if (!document.getElementById(IDS.WRAP)) schedule(120);
+  });
+  obs.observe(document.documentElement, { childList: true, subtree: true });
+
+  schedule(0);
+})();

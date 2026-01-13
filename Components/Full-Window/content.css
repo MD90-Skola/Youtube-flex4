@@ -3,7 +3,6 @@
    En CSS-fil, tre lägen
    ========================================================= */
 
-
 /* =========================================================
    0) GLOBAL BAS (gäller alla lägen)
    ========================================================= */
@@ -14,37 +13,34 @@ body.yt-flex {
   background: #000 !important;
 }
 
-/* Gemensam säkerhet */
-ytd-watch-flexy video {
+/* Säkerhet: video synlig */
+video {
   display: block !important;
   opacity: 1 !important;
   visibility: visible !important;
   background: #000 !important;
 }
 
-
 /* =========================================================
-   1) NORMAL MODE
-   - Vanligt YouTube-läge
-   - Ingen fullscreen
+   1) NORMAL MODE (vanligt YouTube)
+   - Inte fullscreen
+   - Lite bättre fill (utan att bryta layout)
    ========================================================= */
 ytd-watch-flexy.yt-mode-normal {
   position: relative !important;
 }
 
 ytd-watch-flexy.yt-mode-normal video {
-  max-height: 90vh !important;
   width: 100% !important;
   height: auto !important;
   object-fit: contain !important;
+  max-height: 88vh !important; /* gör den större utan att låsa layouten */
 }
 
-
 /* =========================================================
-   2) THEATER / WINDOWED FULLSCREEN
-   - Maximal storlek
+   2) THEATER / WINDOWED FULLSCREEN (din "perfekta")
+   - Full yta
    - Aldrig crop
-   - Matematiskt korrekt centrerad
    ========================================================= */
 html.yt-flex.yt-theater,
 body.yt-flex.yt-theater {
@@ -60,7 +56,7 @@ ytd-watch-flexy.yt-mode-theater {
   z-index: 2147483646 !important;
 }
 
-/* Ramen som videon lever i */
+/* Player-ramen */
 ytd-watch-flexy.yt-mode-theater #player-theater-container {
   position: absolute !important;
   inset: 0 !important;
@@ -81,21 +77,18 @@ ytd-watch-flexy.yt-mode-theater .html5-video-container {
   padding: 0 !important;
 }
 
-/* 🔑 MATEMATISK VIDEO */
+/* Video */
 ytd-watch-flexy.yt-mode-theater video {
   position: absolute !important;
   inset: 0 !important;
-
   width: 100% !important;
   height: 100% !important;
-
   object-fit: contain !important; /* aldrig crop */
   object-position: center center !important;
-
   background: #000 !important;
 }
 
-/* Göm allt runt */
+/* Göm runtom */
 ytd-watch-flexy.yt-mode-theater #masthead-container,
 ytd-watch-flexy.yt-mode-theater #secondary,
 ytd-watch-flexy.yt-mode-theater #below,
@@ -104,27 +97,66 @@ ytd-watch-flexy.yt-mode-theater #chat {
   display: none !important;
 }
 
-
 /* =========================================================
-   3) SHORTS MODE
-   - Vertikal video
-   - Full höjd
+   3) SHORTS MODE (STÄDAT + MAXIMALT FYLL)
+   - Shorts använder annan DOM än watch-flexy
+   - Vi tar över layouten på reel-renderern
    ========================================================= */
 html.yt-flex.yt-shorts,
 body.yt-flex.yt-shorts {
   overflow: hidden !important;
-}
-
-ytd-watch-flexy.yt-mode-shorts {
-  position: fixed !important;
-  inset: 0 !important;
   background: #000 !important;
 }
 
-ytd-watch-flexy.yt-mode-shorts video {
+/* Se till att “appen” inte begränsar */
+html.yt-flex.yt-shorts ytd-app,
+html.yt-flex.yt-shorts ytd-page-manager,
+html.yt-flex.yt-shorts #content,
+html.yt-flex.yt-shorts ytd-shorts {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  background: #000 !important;
+}
+
+/* Aktiva shorts-kortet fyller hela fönstret */
+html.yt-flex.yt-shorts ytd-reel-video-renderer[is-active],
+html.yt-flex.yt-shorts ytd-reel-video-renderer.yt-mode-shorts-host {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #000 !important;
+  z-index: 2147483646 !important;
+}
+
+/* Video/wrappers fyller ytan */
+html.yt-flex.yt-shorts .html5-video-player,
+html.yt-flex.yt-shorts .html5-video-container,
+html.yt-flex.yt-shorts video {
   width: 100% !important;
   height: 100% !important;
+  background: #000 !important;
+}
 
-  object-fit: contain !important; /* behåll hela shortsen */
+/* “så bra det går” utan crop (du slipper avklippt shorts) */
+html.yt-flex.yt-shorts video {
+  object-fit: contain !important;
   object-position: center center !important;
+}
+
+/* Göm störande UI på shorts */
+html.yt-flex.yt-shorts #masthead-container,
+html.yt-flex.yt-shorts ytd-mini-guide-renderer,
+html.yt-flex.yt-shorts ytd-guide-renderer,
+html.yt-flex.yt-shorts ytd-reel-player-header-renderer,
+html.yt-flex.yt-shorts ytd-reel-player-overlay-renderer,
+html.yt-flex.yt-shorts ytd-reel-video-info-renderer,
+html.yt-flex.yt-shorts ytd-reel-video-action-bar-renderer,
+html.yt-flex.yt-shorts ytd-reel-sound-metadata-renderer,
+html.yt-flex.yt-shorts ytd-engagement-panel-section-list-renderer,
+html.yt-flex.yt-shorts tp-yt-paper-dialog,
+html.yt-flex.yt-shorts #comments {
+  display: none !important;
 }

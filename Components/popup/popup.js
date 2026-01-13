@@ -1,57 +1,120 @@
-// Kan köras både i toolbar-popup (document) och i ShadowRoot (på YouTube-sidan)
-export async function initSettingsPopup(root) {
-    const $ = (sel) => root.querySelector(sel);
-    const overlay = $(".ytf-opt-overlay");
-    const sheet   = $(".ytf-opt-sheet");
-    if (!overlay || !sheet) return;
+// popup.js — toolbar popup (simple, readable)
 
-    const close = () => {
-        // ShadowRoot på YouTube-sidan → stäng host. Toolbar-popup → stäng fönster.
-        if (root.host && root.host.remove) root.host.remove();
-        else window.close();
-    };
+const DEFAULTS = {
+  addonEnabled: true,
 
-    overlay.addEventListener("click", (e) => {
-        const path = e.composedPath ? e.composedPath() : [];
-        if (!path.includes(sheet)) close();
-    });
+  addOptionsButton: true,
+  enableDislikes: false,
 
-    const inputs = [...root.querySelectorAll('input[type="checkbox"][data-setting]')];
+  // the toggles you asked for
+  advStreamMode: true,
 
-    const defaults = {
-        addOptionsButton: true,
-        addFullWindowButton: true,
-        enableDislikes: false,
-    };
+  // advanced
+  advThumbDownload: true,
+  advThumbClipboard: true,
+  advVideoDL: true,
+  advSocialBlade: true,
+  advZoom: true,
+};
 
-    function applyState(state) {
-        inputs.forEach(inp => {
-            const k = inp.dataset.setting;
-            inp.checked = !!(state[k] ?? defaults[k]);
-        });
-    }
+const ADV_KEYS = [
+  "advThumbDownload",
+  "advThumbClipboard",
+  "advVideoDL",
+  "advSocialBlade",
+  "advZoom",
+];
 
-    const stored = await chrome.storage.local.get(Object.keys(defaults));
-    applyState(stored);
+function $(sel) { return document.querySelector(sel); }
+function $all(sel) { return [...document.querySelectorAll(sel)]; }
 
-    inputs.forEach(inp => {
-        inp.addEventListener("change", async () => {
-            const key = inp.dataset.setting;
-            const val = !!inp.checked;
-            await chrome.storage.local.set({ [key]: val });
-            // Snabb feedback för Dislikes när popupen körs inne på YouTube-sidan.
-            if (key === "enableDislikes" && root !== document) {
-                try {
-                    const m = await import(chrome.runtime.getURL("Components/Dislikes/dislike.js"));
-                    if (val) m.enable?.(); else m.disable?.();
-                } catch {}
-            }
-        });
-    });
+function setRowsDisabled(disabled) {
+  // disable everything except master row
+  const keys = [
+    "advStreamMode",
+    "addOptionsButton",
+    "enableDislikes",
+    ...ADV_KEYS,
+  ];
+
+  for (const key of keys) {
+    const row = document.querySelector(`[data-row="${key}"]`);
+    row?.classList.toggle("ytf-disabled", disabled);
+  }
+
+  const acc = document.querySelector('details[data-acc="advanced"]');
+  acc?.classList.toggle("ytf-disabled", disabled);
+
+  const note = $("#ytf-master-note");
+  if (note) {
+    note.textContent = disabled
+      ? "YT Flex är avstängt. Slå på “Addon on/off” för att aktivera funktionerna."
+      : "";
+  }
 }
 
-// MV3: denna fil laddas som <script type="module" src="popup.js"> i toolbar-popupen.
-// Auto-init där (root = document). På YouTube-sidan importeras funktionen av content-scriptet.
-if (typeof document !== "undefined" && document.body && document.body.classList.contains("ytf-standalone")) {
-    initSettingsPopup(document);
+function updateAdvBadge() {
+  const badge = $("#ytf-adv-badge");
+  if (!badge) return;
+
+  let on = 0;
+  for (const key of ADV_KEYS) {
+    const inp = document.querySelector(`input[data-setting="${key}"]`);
+    if (inp?.checked) on++;
+  }
+  badge.textContent = `${on}/${ADV_KEYS.length}`;
 }
+
+async function loadState() {
+  const stored = await chrome.storage.local.get(Object.keys(DEFAULTS));
+  return Object.assign({}, DEFAULTS, stored);
+}
+
+async function applyState(state) {
+  for (const key of Object.keys(DEFAULTS)) {
+    const inp = document.querySelector(`input[data-setting="${key}"]`);
+    if (inp) inp.checked = !!state[key];
+  }
+
+  setRowsDisabled(!state.addonEnabled);
+  updateAdvBadge();
+}
+
+async function bindToggles() {
+  const inputs = $all('input[type="checkbox"][data-setting]');
+
+  inputs.forEach(inp => {
+    inp.addEventListener("change", async () => {
+      const key = inp.dataset.setting;
+      const val = !!inp.checked;
+
+      await chrome.storage.local.set({ [key]: val });
+
+      if (key === "addonEnabled") {
+        setRowsDisabled(!val);
+        // collapse advanced when OFF
+        const acc = document.querySelector('details[data-acc="advanced"]');
+        if (!val && acc) acc.open = false;
+      }
+
+      if (ADV_KEYS.includes(key)) updateAdvBadge();
+    });
+  });
+}
+
+function bindTopButtons() {
+  $all("[data-open]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const url = btn.getAttribute("data-open");
+      if (url) window.open(url, "_blank");
+    });
+  });
+}
+
+(async function init() {
+  bindTopButtons();
+  await bindToggles();
+
+  const state = await loadState();
+  await applyState(state);
+})();

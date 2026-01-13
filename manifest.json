@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Youtube Flex",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Modern toolkit för YouTube-spelaren.",
   "incognito": "spanning",
   "icons": {
@@ -44,6 +44,9 @@
       ],
       "js": [
         "Components/Buttons/YTP-Button/options.js",
+
+        "Components/Buttons/YTP-Button/add-buttons-to-ymp/option-button-menu-design.js",
+
         "Components/Full-Window/content.js"
       ],
       "run_at": "document_idle",
@@ -52,15 +55,24 @@
   ],
   "web_accessible_resources": [
     {
-      "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://m.youtube.com/*"
+      ],
       "resources": [
         "Components/Full-Window/content.css",
 
         "Components/Buttons/YTP-Button/add-buttons-to-ymp/ymp-position.css",
+        "Components/Buttons/YTP-Button/add-buttons-to-ymp/ymp-full-window.css",
+        "Components/Buttons/YTP-Button/add-buttons-to-ymp/ymp-full-window.js",
 
         "Components/Buttons/YTP-Button/design/option-popup.html",
         "Components/Buttons/YTP-Button/design/option-popup.css",
         "Components/Buttons/YTP-Button/design/option-popup.js",
+
+        "Components/options-form/options-form.html",
+        "Components/options-form/options-form.css",
+        "Components/options-form/options-form.js",
 
         "Components/Dislikes/dislike.js",
         "Components/Dislikes/dislike.css",
@@ -75,8 +87,11 @@
         "libs/ffmpeg/ffmpeg.min.js",
         "libs/ffmpeg/ffmpeg-core.js",
         "libs/ffmpeg/ffmpeg-core.wasm",
-        "Components/video/video-download/index.js",
-        "Components/video/converter-mp3/index.js"
+
+        "Components/video/video-download/sos-youtube.js",
+        "Components/video/converter-mp3/index.js",
+
+        "Components/hachtag-finder/hachtag-finder.js"
       ]
     }
   ]

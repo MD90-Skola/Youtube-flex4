@@ -13,7 +13,6 @@
 
   // =========================
   // 1) CSS loader (content.css)
-  //    - vi fetch:ar från extension och stoppar in i <style>
   // =========================
   const STYLE_ID = "yt-flex-fw-style";
   let cssReady = false;
@@ -53,6 +52,15 @@
   const $ = (s) => document.querySelector(s);
   const getFlexy = () => $("ytd-watch-flexy");
 
+  // Shorts DOM skiljer sig -> hitta en "host"
+  function getShortsHost() {
+    return (
+      $("ytd-reel-video-renderer[is-active]") ||
+      $("ytd-reel-video-renderer") ||
+      $("ytd-shorts")
+    );
+  }
+
   function isShorts() {
     return location.pathname.startsWith("/shorts");
   }
@@ -70,16 +78,13 @@
   }
 
   // =========================
-  // 3) Mode-system (matchar din CSS)
-  //    Modes vi använder:
-  //    - "normal"  => yt-mode-normal
-  //    - "theater" => yt-mode-theater (vårt windowed fullscreen)
-  //    - "shorts"  => yt-mode-shorts
+  // 3) Mode-system
   // =========================
-  let active = false;        // true = vårt windowed fullscreen är på
+  let active = false;        // true = theater (windowed fullscreen) är på
   let currentMode = "normal";
 
   function clearModeClasses(fx) {
+    if (!fx) return;
     fx.classList.remove("yt-mode-normal", "yt-mode-theater", "yt-mode-shorts");
   }
 
@@ -103,24 +108,44 @@
     }
   }
 
-  function setMode(mode) {
-    const fx = getFlexy();
-    if (!fx) return;
+  function cleanupShortsHost() {
+    const sh = getShortsHost();
+    if (sh) sh.classList.remove("yt-mode-shorts-host");
+  }
 
-    clearModeClasses(fx);
+  function setMode(mode) {
+    // alltid se till att CSS finns när vi sätter ett "special-mode"
+    // (normal kan funka utan, men det skadar inte)
+    // OBS: vi await:ar inte här – den kallas ibland från sync() ofta
+    ensureCss();
+
+    const fx = getFlexy();
+
+    // Rensa root + host-klasser
     clearRootClasses();
+    cleanupShortsHost();
+    if (fx) clearModeClasses(fx);
 
     // root
     setRootClasses(mode);
 
-    // flexy mode
-    if (mode === "theater") fx.classList.add("yt-mode-theater");
-    else if (mode === "shorts") fx.classList.add("yt-mode-shorts");
-    else fx.classList.add("yt-mode-normal");
+    // THEATER/NORMAL kräver watch-flexy
+    if (mode === "theater" || mode === "normal") {
+      if (!fx) return;
 
-    // Force reflow (YouTube kan “cacha” layout)
-    fx.style.transform = "translateZ(0)";
-    setTimeout(() => { fx.style.transform = ""; }, 0);
+      if (mode === "theater") fx.classList.add("yt-mode-theater");
+      else fx.classList.add("yt-mode-normal");
+
+      // Force reflow (YouTube kan “cacha” layout)
+      fx.style.transform = "translateZ(0)";
+      setTimeout(() => { fx.style.transform = ""; }, 0);
+    }
+
+    // SHORTS: funkar utan watch-flexy
+    if (mode === "shorts") {
+      const sh = getShortsHost();
+      if (sh) sh.classList.add("yt-mode-shorts-host");
+    }
 
     // Resize-event hjälper playern uppdatera layout
     requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
@@ -130,7 +155,7 @@
   }
 
   // =========================
-  // 4) Detektion: vad är "basläget" när vi INTE är aktiva?
+  // 4) Basläge när vi inte är aktiva
   // =========================
   function detectBaseMode() {
     if (isShorts()) return "shorts";
@@ -138,8 +163,7 @@
   }
 
   // =========================
-  // 5) När får vi aktivera windowed fullscreen?
-  //    - Inte i native fullscreen, PiP, miniplayer, shorts
+  // 5) När får vi aktivera theater?
   // =========================
   function isAllowedToToggle() {
     if (isShorts()) return false;
@@ -150,19 +174,19 @@
   }
 
   // =========================
-  // 6) Toggle: Normal <-> Theater(windowed fullscreen)
+  // 6) Toggle: Normal <-> Theater
   // =========================
   async function toggle(force) {
     const want = (typeof force === "boolean") ? force : !active;
 
-    // Om vi ska stänga
+    // stäng
     if (!want) {
       active = false;
       setMode(detectBaseMode());
       return;
     }
 
-    // Om vi ska slå på
+    // slå på
     if (!isAllowedToToggle()) return;
 
     const ok = await ensureCss();
@@ -174,43 +198,70 @@
 
   // =========================
   // 7) Inject knapp i player
+  //       knappen i media spelare menu till höger yt-flex-fw-btn
   // =========================
-  function injectButton() {
-    // controls finns bara när spelaren är laddad
-    const controls = $(".ytp-right-controls");
-    if (!controls) return;
 
-    if ($("#yt-flex-fw-btn")) return;
 
-    const btn = document.createElement("button");
+function applyStreamButtonVisibility(enabled) {
+  const btn = document.getElementById("yt-flex-fw-btn");
+  if (btn) btn.style.display = enabled ? "" : "none";
+}
+
+function injectButton() {
+  const controls = $(".ytp-right-controls");
+  if (!controls) return;
+
+  let btn = document.getElementById("yt-flex-fw-btn");
+
+  if (!btn) {
+    btn = document.createElement("button");
     btn.id = "yt-flex-fw-btn";
     btn.className = "ytp-button";
-    btn.title = "Windowed Fullscreen";
     btn.innerHTML = "⬛";
     btn.addEventListener("click", () => toggle(), { passive: true });
-
     controls.prepend(btn);
   }
-  const btnTimer = setInterval(injectButton, 500);
+
+  // ✅ sätt synlighet varje gång (SPA-säkert)
+  chrome.storage.local.get(["advStreamMode"], (res) => {
+    applyStreamButtonVisibility(!!res.advStreamMode);
+  });
+}
+
+const btnTimer = setInterval(injectButton, 500);
+
+// initial state (om knappen redan finns)
+chrome.storage.local.get(["advStreamMode"], (res) => {
+  applyStreamButtonVisibility(!!res.advStreamMode);
+});
+
+// live updates from popup
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local") return;
+  if ("advStreamMode" in changes) {
+    applyStreamButtonVisibility(!!changes.advStreamMode.newValue);
+  }
+});
+
 
   // =========================
-  // 8) Håll mode korrekt vid navigation / fullscreen / osv
+  // 8) Sync vid navigation / fullscreen / osv
   // =========================
   function sync() {
-    // Shorts ska alltid vara shorts (och stänga vår active)
+    // Shorts: alltid shorts-mode (och stäng theater)
     if (isShorts()) {
       active = false;
       setMode("shorts");
       return;
     }
 
-    // Om native fullscreen startar: stäng vår
+    // Om native fullscreen startar: stäng theater
     if (isNativeFullscreen() && active) {
       toggle(false);
       return;
     }
 
-    // Om vi inte är aktiva: säkerställ basläge
+    // Om inte active: håll basläge
     if (!active) {
       setMode(detectBaseMode());
     }
@@ -219,7 +270,7 @@
   window.addEventListener("yt-navigate-finish", sync, true);
   document.addEventListener("fullscreenchange", sync, true);
 
-  // ESC stänger windowed fullscreen
+  // ESC stänger theater
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && active) toggle(false);
   }, true);
@@ -235,18 +286,18 @@
   });
 
   // =========================
-  // 10) Debug API (för DevTools)
+  // 10) Debug API (DevTools)
   // =========================
   window.__YTFW = {
     toggle,
-    setMode, // (manual) "normal" | "theater" | "shorts"
+    setMode, // "normal" | "theater" | "shorts"
     mode: () => currentMode,
     active: () => active,
     sync
   };
 
   // =========================
-  // 11) Startläge
+  // 11) Start
   // =========================
-  sync();
+  ensureCss().then(sync);
 })();

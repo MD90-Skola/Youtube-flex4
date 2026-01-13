@@ -3,50 +3,115 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>YT Flex · Toggles</title>
+    <!-- ingen <title> så du slipper browser-title -->
     <link rel="stylesheet" href="popup.css" />
 </head>
+
 <body class="ytf-standalone">
 <div class="ytf-opt-overlay">
-    <div class="ytf-opt-sheet" role="dialog" aria-modal="true" aria-label="YT Flex options">
-        <div class="ytf-title">YT Flex · Toggles</div>
+    <div class="ytf-opt-sheet" role="dialog" aria-modal="true" aria-label="YT Flex toggles">
 
-        <div class="ytf-row">
+        <div class="ytf-title">YT Flex · Toggles</div>
+        <div class="ytf-sep"></div>
+
+        <!-- TOP BUTTONS -->
+        <div class="ytf-bigrow">
+            <button class="ytf-bigbtn" data-open="https://www.youtube.com/">YouTube</button>
+            <button class="ytf-bigbtn" data-open="https://studio.youtube.com/">Studio</button>
+        </div>
+
+        <div class="ytf-sep"></div>
+
+        <!-- TOGGLES -->
+        <div class="ytf-row" data-row="addonEnabled">
             <div>
-                <div>Add YTP Options Button</div>
-                <div class="ytf-note">Knapp med inställningar i spelaren.</div>
+                <div><b>Addon on/off</b></div>
+                <div class="ytf-note">Stänger av / på hela YT Flex.</div>
             </div>
+            <label class="switch">
+                <input type="checkbox" data-setting="addonEnabled">
+                <span class="track"></span><span class="thumb"></span>
+            </label>
+        </div>
+
+        <div class="ytf-row ytf-sub" data-row="advStreamMode">
+            <div><b>Show stream-mode</b></div>
+            <label class="switch">
+                <input type="checkbox" data-setting="advStreamMode">
+                <span class="track"></span><span class="thumb"></span>
+            </label>
+        </div>
+
+        <div class="ytf-row ytf-sub" data-row="addOptionsButton">
+            <div><b>Option button</b></div>
             <label class="switch">
                 <input type="checkbox" data-setting="addOptionsButton">
                 <span class="track"></span><span class="thumb"></span>
             </label>
         </div>
 
-        <div class="ytf-row">
-            <div>
-                <div>Add YTP Full-Window Button</div>
-                <div class="ytf-note">Direktknapp för “Stream/Full-Window”.</div>
-            </div>
-            <label class="switch">
-                <input type="checkbox" data-setting="addFullWindowButton">
-                <span class="track"></span><span class="thumb"></span>
-            </label>
-        </div>
-
-        <div class="ytf-row">
-            <div>
-                <div>Dislike Viewer</div>
-                <div class="ytf-note">Visa 👎-data vid spelaren.</div>
-            </div>
+        <div class="ytf-row ytf-sub" data-row="enableDislikes">
+            <div><b>Dislike Viewer</b></div>
             <label class="switch">
                 <input type="checkbox" data-setting="enableDislikes">
                 <span class="track"></span><span class="thumb"></span>
             </label>
         </div>
+
+        <!-- ADVANCED -->
+        <details class="ytf-acc" data-acc="advanced">
+            <summary>
+                <span class="ytf-acc-title">Advanced</span>
+                <span class="ytf-acc-badge" id="ytf-adv-badge">0/0</span>
+            </summary>
+
+            <div class="ytf-acc-body">
+                <div class="ytf-row" data-row="advThumbDownload">
+                    <div><b>Thumbnail : png download</b></div>
+                    <label class="switch">
+                        <input type="checkbox" data-setting="advThumbDownload">
+                        <span class="track"></span><span class="thumb"></span>
+                    </label>
+                </div>
+
+                <div class="ytf-row" data-row="advThumbClipboard">
+                    <div><b>Thumbnail : clipboard</b></div>
+                    <label class="switch">
+                        <input type="checkbox" data-setting="advThumbClipboard">
+                        <span class="track"></span><span class="thumb"></span>
+                    </label>
+                </div>
+
+                <div class="ytf-row" data-row="advVideoDL">
+                    <div><b>Video DL</b></div>
+                    <label class="switch">
+                        <input type="checkbox" data-setting="advVideoDL">
+                        <span class="track"></span><span class="thumb"></span>
+                    </label>
+                </div>
+
+                <div class="ytf-row" data-row="advSocialBlade">
+                    <div><b>Social blade</b></div>
+                    <label class="switch">
+                        <input type="checkbox" data-setting="advSocialBlade">
+                        <span class="track"></span><span class="thumb"></span>
+                    </label>
+                </div>
+
+                <div class="ytf-row" data-row="advZoom">
+                    <div><b>Zoom</b></div>
+                    <label class="switch">
+                        <input type="checkbox" data-setting="advZoom">
+                        <span class="track"></span><span class="thumb"></span>
+                    </label>
+                </div>
+            </div>
+        </details>
+
+        <div class="ytf-footer ytf-note" id="ytf-master-note"></div>
     </div>
 </div>
 
-<!-- MV3: inga inline scripts. Ladda modulfilen direkt. -->
 <script type="module" src="popup.js"></script>
 </body>
 </html>
